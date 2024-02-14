@@ -72,6 +72,7 @@ func renderRow(y int, prefix, text, padding, suffix string) string {
 		if !ActiveCursor.Disabled && ActiveCursor.Y == y {
 			char := ActiveCursor.CurrentChar()
 
+			// If the cursor is at the end of the line, we need to remove the first character to make room for the cursor
 			if ActiveCursor.X == ActiveCursor.BodyWidth {
 				text = text[1:]
 			}
