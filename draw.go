@@ -60,7 +60,7 @@ func renderRow(y int, prefix, text, padding, suffix string) string {
 			from := ScrollX
 			to := ScrollX + ActiveCursor.BodyWidth
 
-			for textLen < to {
+			for textLen+1 < to {
 				text += " "
 				textLen++
 			}
@@ -70,20 +70,13 @@ func renderRow(y int, prefix, text, padding, suffix string) string {
 
 		// Insert cursor
 		if !ActiveCursor.Disabled && ActiveCursor.Y == y {
-			relX := ActiveCursor.X
+			char := ActiveCursor.CurrentChar()
 
-			runes := []rune(text)
-
-			char := " "
-
-			if relX < len(runes) {
-				char = string(runes[relX])
-			} else {
-				// Remove 1 character from the start since we're adding a space
+			if ActiveCursor.X == ActiveCursor.BodyWidth {
 				text = text[1:]
 			}
 
-			text = ReplaceCharacterAt(text, InvertColors(char), relX)
+			text = ReplaceCharacterAt(text, InvertColors(char), ActiveCursor.X)
 		}
 	}
 

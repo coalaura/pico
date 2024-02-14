@@ -37,7 +37,23 @@ func (c *Cursor) LineLength() int {
 	return len([]rune(line))
 }
 
-func (c *Cursor) ClampX() {
+func (c *Cursor) CurrentChar() string {
+	absX := c.AbsoluteX()
+
+	line := c.CurrentLine()
+	runes := []rune(line)
+
+	if absX >= len(runes) {
+		return " "
+	}
+
+	return string(runes[absX])
+}
+
+func (c *Cursor) SetAbsX(x int) {
+	ScrollX = 0
+	c.X = x
+
 	if c.X < 0 {
 		ScrollX += c.X
 
@@ -50,11 +66,11 @@ func (c *Cursor) ClampX() {
 		maxLine := c.LineLength()
 		maxX := maxLine
 
-		if maxX > c.BodyWidth {
-			maxX = c.BodyWidth
+		if maxX >= c.BodyWidth {
+			maxX = c.BodyWidth - 1
 		}
 
-		tooFar := (c.X - maxX) + 1
+		tooFar := c.X - maxX
 
 		if tooFar > 0 {
 			ScrollX += tooFar
@@ -70,13 +86,8 @@ func (c *Cursor) ClampX() {
 	}
 }
 
-func (c *Cursor) SetX(x int) {
-	c.X = x
-
-	c.ClampX()
-}
-
-func (c *Cursor) SetY(y int) {
+func (c *Cursor) SetAbsY(y int) {
+	ScrollY = 0
 	c.Y = y
 
 	if c.Y < 0 {
@@ -110,7 +121,7 @@ func (c *Cursor) SetY(y int) {
 		}
 	}
 
-	c.ClampX()
+	c.SetAbsX(c.AbsoluteX())
 }
 
 func (c *Cursor) Up() {
@@ -118,7 +129,7 @@ func (c *Cursor) Up() {
 		return
 	}
 
-	c.SetY(c.Y - 1)
+	c.SetAbsY(c.AbsoluteY() - 1)
 }
 
 func (c *Cursor) Down() {
@@ -126,7 +137,7 @@ func (c *Cursor) Down() {
 		return
 	}
 
-	c.SetY(c.Y + 1)
+	c.SetAbsY(c.AbsoluteY() + 1)
 }
 
 func (c *Cursor) Left() {
@@ -146,7 +157,7 @@ func (c *Cursor) Left() {
 		return
 	}
 
-	c.SetX(c.X - 1)
+	c.SetAbsX(c.AbsoluteX() - 1)
 }
 
 func (c *Cursor) Right() {
@@ -164,15 +175,13 @@ func (c *Cursor) Right() {
 		return
 	}
 
-	c.SetX(c.X + 1)
+	c.SetAbsX(c.AbsoluteX() + 1)
 }
 
 func (c *Cursor) MoveEndOfLine() {
-	c.SetX(c.LineLength())
+	c.SetAbsX(c.LineLength())
 }
 
 func (c *Cursor) MoveStartOfLine() {
-	ScrollX = 0
-
-	c.SetX(0)
+	c.SetAbsX(0)
 }

@@ -89,7 +89,7 @@ func insertNewLine() {
 	// Paste
 	Lines = append(newLines, linesAfter...)
 
-	ActiveCursor.SetX(0)
+	ActiveCursor.MoveStartOfLine()
 	ActiveCursor.Down()
 
 	IsDirty = true
@@ -106,7 +106,7 @@ func insertChars(chars ...rune) {
 
 	Lines[y] = before + string(chars) + after
 
-	ActiveCursor.SetX(ActiveCursor.X + len(chars))
+	ActiveCursor.SetAbsX(ActiveCursor.AbsoluteX() + len(chars))
 
 	IsDirty = true
 }
@@ -129,7 +129,7 @@ func deleteChar() {
 		Lines = append(Lines[:y], Lines[y+1:]...)
 
 		ActiveCursor.Up()
-		ActiveCursor.SetX(len(previous))
+		ActiveCursor.MoveEndOfLine()
 	} else {
 		before := current[:x-1]
 		after := current[x:]
