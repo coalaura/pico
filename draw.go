@@ -49,20 +49,20 @@ func renderRow(y int, prefix, text, padding, suffix string) string {
 		x := ActiveCursor.X
 
 		if textLen == 0 {
-			sb.WriteString("█")
+			sb.WriteString(InvertColors(" "))
 
 			textLen++ // Add an extra space for the cursor
 		} else if x == 0 {
-			sb.WriteString("█")
+			sb.WriteString(InvertColors(string(runes[0])))
 			sb.WriteString(string(runes[1:]))
 		} else if x == textLen {
 			sb.WriteString(text)
-			sb.WriteString("█")
+			sb.WriteString(InvertColors(" "))
 
 			textLen++ // Add an extra space for the cursor
 		} else {
 			sb.WriteString(string(runes[:x]))
-			sb.WriteString("█")
+			sb.WriteString(InvertColors(string(runes[x])))
 			sb.WriteString(string(runes[x+1:]))
 		}
 	} else {
