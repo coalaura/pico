@@ -28,8 +28,6 @@ func readAndHandleKey() {
 	case keyboard.KeyCtrlX:
 		save()
 		exit()
-	case keyboard.KeyEnd:
-		ActiveCursor.MoveEndOfLine()
 	case keyboard.KeyBackspace, keyboard.KeyBackspace2:
 		deleteChar()
 	case keyboard.KeyDelete:
@@ -45,6 +43,10 @@ func readAndHandleKey() {
 		ActiveCursor.Left()
 	case keyboard.KeyArrowRight:
 		ActiveCursor.Right()
+	case keyboard.KeyHome:
+		ActiveCursor.MoveStartOfLine()
+	case keyboard.KeyEnd:
+		ActiveCursor.MoveEndOfLine()
 
 	/* Typing */
 	case keyboard.KeyEnter:
