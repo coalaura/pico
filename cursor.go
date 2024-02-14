@@ -8,8 +8,6 @@ type Cursor struct {
 
 	BodyWidth  int
 	BodyHeight int
-
-	maxRememberedX int // epic
 }
 
 func (c *Cursor) SetDimensions(bodyWidth, bodyHeight int) {
@@ -22,7 +20,7 @@ func (c *Cursor) SetDisabled(disabled bool) {
 }
 
 func (c *Cursor) AbsoluteX() int {
-	return c.X
+	return c.X + ScrollX
 }
 
 func (c *Cursor) AbsoluteY() int {
@@ -33,35 +31,53 @@ func (c *Cursor) CurrentLine() string {
 	return Lines[c.AbsoluteY()]
 }
 
-func (c *Cursor) MaxX() int {
+func (c *Cursor) LineLength() int {
 	line := c.CurrentLine()
 
 	return len([]rune(line))
 }
 
 func (c *Cursor) ClampX() {
-	maxX := c.MaxX()
+	if c.X < 0 {
+		ScrollX += c.X
 
-	if c.X > maxX {
-		c.X = maxX
-	} else if c.X < 0 {
+		if ScrollX < 0 {
+			ScrollX = 0
+		}
+
 		c.X = 0
+	} else {
+		maxLine := c.LineLength()
+		maxX := maxLine
+
+		if maxX > c.BodyWidth {
+			maxX = c.BodyWidth
+		}
+
+		tooFar := (c.X - maxX) + 1
+
+		if tooFar > 0 {
+			ScrollX += tooFar
+			c.X = maxX
+
+			if ScrollX > maxLine-maxX {
+				ScrollX = maxLine - maxX
+
+				// We were past the end of the line, set the cursor to the end
+				c.X = maxX
+			}
+		}
 	}
 }
 
 func (c *Cursor) SetX(x int) {
 	c.X = x
-	c.maxRememberedX = c.X
 
 	c.ClampX()
 }
 
 func (c *Cursor) SetY(y int) {
 	c.Y = y
-
-	if c.maxRememberedX > c.X {
-		c.X = c.maxRememberedX
-	}
 
 	if c.Y < 0 {
 		ScrollY += c.Y
@@ -118,7 +134,7 @@ func (c *Cursor) Left() {
 		return
 	}
 
-	if c.X == 0 {
+	if c.AbsoluteX() == 0 {
 		ay := c.AbsoluteY()
 
 		if ay > 0 {
@@ -138,9 +154,9 @@ func (c *Cursor) Right() {
 		return
 	}
 
-	if c.X == c.MaxX() {
+	if c.AbsoluteX() == c.LineLength() {
 		if c.AbsoluteY() < len(Lines)-1 {
-			c.SetX(0)
+			c.MoveStartOfLine()
 		}
 
 		c.Down()
@@ -152,7 +168,11 @@ func (c *Cursor) Right() {
 }
 
 func (c *Cursor) MoveEndOfLine() {
-	line := Lines[c.AbsoluteY()]
+	c.SetX(c.LineLength())
+}
 
-	c.SetX(len([]rune(line)))
+func (c *Cursor) MoveStartOfLine() {
+	ScrollX = 0
+
+	c.SetX(0)
 }

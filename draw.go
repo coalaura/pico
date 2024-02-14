@@ -11,7 +11,7 @@ func draw(lines []string) {
 	screen.MoveTopLeft()
 
 	title := fmt.Sprintf("Pico - %s%s ", FileName, DirtyIndicator())
-	footer := fmt.Sprintf("Ln %d, Col %d ", ActiveCursor.Y+1, ActiveCursor.X+1)
+	footer := fmt.Sprintf("Ln %d, Col %d ", ActiveCursor.AbsoluteY()+1, ActiveCursor.AbsoluteX()+1)
 
 	// Draw the header
 	fmt.Println(renderRow(-1, "┌ ", title, "─", "─┐"))
@@ -41,42 +41,53 @@ func renderRow(y int, prefix, text, padding, suffix string) string {
 	sb.WriteString(prefix)
 
 	// Text length (with support for unicode)
-	runes := []rune(text)
-	textLen := len(runes)
+	textLen := len([]rune(text))
 
-	// Insert cursor
-	if !ActiveCursor.Disabled && ActiveCursor.Y == y {
-		x := ActiveCursor.X
-
-		if textLen == 0 {
-			sb.WriteString(InvertColors(" "))
-
-			textLen++ // Add an extra space for the cursor
-		} else if x == 0 {
-			sb.WriteString(InvertColors(string(runes[0])))
-			sb.WriteString(string(runes[1:]))
-		} else if x == textLen {
-			sb.WriteString(text)
-			sb.WriteString(InvertColors(" "))
-
-			textLen++ // Add an extra space for the cursor
-		} else {
-			sb.WriteString(string(runes[:x]))
-			sb.WriteString(InvertColors(string(runes[x])))
-			sb.WriteString(string(runes[x+1:]))
-		}
-	} else {
-		sb.WriteString(text)
-	}
-
+	// Append padding
 	prefixLen := len([]rune(prefix)) - 2
 	suffixLen := len([]rune(suffix)) - 2
 
 	paddingLen := ActiveCursor.BodyWidth - textLen - prefixLen - suffixLen
 
 	if paddingLen > 0 {
-		sb.WriteString(strings.Repeat(padding, paddingLen))
+		text += strings.Repeat(padding, paddingLen)
 	}
+
+	// -1 is footer and header (non-content) rows
+	if y != -1 {
+		// Clamp the text length and scroll horizontally
+		if textLen > 0 {
+			from := ScrollX
+			to := ScrollX + ActiveCursor.BodyWidth
+
+			for textLen < to {
+				text += " "
+				textLen++
+			}
+
+			text = string([]rune(text)[from:to])
+		}
+
+		// Insert cursor
+		if !ActiveCursor.Disabled && ActiveCursor.Y == y {
+			relX := ActiveCursor.X
+
+			runes := []rune(text)
+
+			char := " "
+
+			if relX < len(runes) {
+				char = string(runes[relX])
+			} else {
+				// Remove 1 character from the start since we're adding a space
+				text = text[1:]
+			}
+
+			text = ReplaceCharacterAt(text, InvertColors(char), relX)
+		}
+	}
+
+	sb.WriteString(text)
 
 	sb.WriteString(suffix)
 

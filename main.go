@@ -23,6 +23,7 @@ var (
 
 	ActiveCursor = Cursor{X: 0, Y: 0}
 	ScrollY      = 0
+	ScrollX      = 0
 )
 
 type Position struct {
