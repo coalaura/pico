@@ -14,7 +14,8 @@ func draw(lines []string) {
 	footer := fmt.Sprintf("Ln %d, Col %d ", ActiveCursor.AbsoluteY()+1, ActiveCursor.AbsoluteX()+1)
 
 	// Draw the header
-	fmt.Println(renderRow(-1, "┌ ", title, "─", "─┐"))
+	headerSuffix := fmt.Sprintf(" %s ─┐", Version)
+	fmt.Println(renderRow(-1, "┌ ", title, "─", headerSuffix))
 
 	// Draw the body
 	for y := 0; y < ActiveCursor.BodyHeight; y++ {

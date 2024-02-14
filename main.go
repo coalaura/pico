@@ -13,6 +13,9 @@ import (
 	"github.com/inancgumus/screen"
 )
 
+// SemVer version
+const Version = "v0.0.2"
+
 var (
 	File *os.File
 
